@@ -1,0 +1,120 @@
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(212,175,55,0.1);
+    padding: var(--spacing-lg);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+}
+
+.sidebar-header h3 {
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.sidebar-header h3 i {
+    color: var(--gold);
+    margin-right: var(--spacing-sm);
+}
+
+.sidebar-header span {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    display: block;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-nav ul li {
+    margin-bottom: var(--spacing-sm);
+}
+
+.sidebar-nav ul li a {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    transition: 0.3s;
+}
+
+.sidebar-nav ul li a:hover {
+    background: rgba(212,175,55,0.05);
+    color: var(--text-primary);
+}
+
+.sidebar-nav ul li a.active {
+    background: rgba(212,175,55,0.1);
+    color: var(--gold);
+}
+
+.sidebar-nav ul li a i {
+    width: 20px;
+}
+
+.admin-content {
+    flex: 1;
+    padding: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .admin-sidebar {
+        width: 200px;
+        padding: var(--spacing-md);
+    }
+    .admin-content {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-wrapper {
+        flex-direction: column;
+    }
+    .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: var(--spacing-sm);
+        border-right: none;
+        border-bottom: 1px solid rgba(212,175,55,0.1);
+    }
+    .sidebar-header {
+        margin-bottom: var(--spacing-md);
+    }
+    .sidebar-nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+    .sidebar-nav ul li {
+        margin-bottom: 0;
+    }
+    .sidebar-nav ul li a {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    .admin-content {
+        padding: var(--spacing-sm);
+    }
+}
