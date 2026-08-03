@@ -10,6 +10,9 @@ if (isLoggedIn()) {
 $error = '';
 $email = '';
 
+$display_image = 'd.jpg';
+$upload_dir = 'uploads/';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = sanitizeInput($_POST['email']);
     $password = $_POST['password'];
@@ -29,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_type'] = $user['user_type'];
                 $_SESSION['profile_image'] = $user['profile_image'];
-                $_SESSION['last_activity'] = time();
                 
                 header('Location: ' . ($user['user_type'] === 'admin' ? 'admin/dashboard.php' : 'index.php'));
                 exit();
@@ -48,122 +50,552 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CodeCraze & Threads</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Login - DRAVEX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/glass.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/forms.css">
     <style>
+        body.login-page {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at 50% 40%, #1a0a2e, #0a0a0f 70%);
+            font-family: 'Inter', sans-serif;
+            background-attachment: fixed;
+        }
+
         .login-wrapper {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            max-width: 1100px;
+            max-width: 1000px;
             width: 100%;
-            background: var(--glass-bg);
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
-            border-radius: var(--radius-xl);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 24px;
             overflow: hidden;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             min-height: 600px;
         }
-        .login-form-side { padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: center; }
-        .login-form-side .auth-logo { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2rem; display: inline-block; }
-        .login-form-side .auth-logo i { color: var(--purple); }
-        .login-form-side h2 { font-size: 2rem; margin-bottom: 0.5rem; background: var(--purple-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .login-form-side .subtitle { color: var(--text-secondary); margin-bottom: 2rem; }
-        .login-image-side { position: relative; overflow: hidden; min-height: 500px; }
-        .login-image-side .slide { position: absolute; inset: 0; opacity: 0; transform: scale(1.1); transition: opacity 1.5s ease, transform 1.5s ease; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 2rem; background-size: cover; background-position: center; }
-        .login-image-side .slide.active { opacity: 1; transform: scale(1); }
-        .login-image-side .slide-content { text-align: center; color: white; z-index: 2; position: relative; }
-        .login-image-side .slide-content i { font-size: 4rem; margin-bottom: 1rem; color: var(--purple); text-shadow: 0 0 30px rgba(139,92,246,0.5); }
-        .login-image-side .slide-content h3 { font-size: 1.8rem; font-weight: 700; }
-        .login-image-side .slide-content p { opacity: 0.9; max-width: 300px; margin: 0 auto; }
-        .login-image-side .slide-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(108,43,217,0.7), rgba(6,182,212,0.5)); z-index: 1; }
-        .slide-indicators { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.5rem; z-index: 3; }
-        .slide-indicators .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: 0.3s; }
-        .slide-indicators .dot.active { background: white; transform: scale(1.2); }
-        @media (max-width: 992px) { .login-wrapper { grid-template-columns: 1fr; max-width: 500px; } .login-image-side { min-height: 300px; order: -1; } .login-form-side { padding: 2rem 1.5rem; } .login-image-side .slide-content i { font-size: 3rem; } .login-image-side .slide-content h3 { font-size: 1.4rem; } }
-        @media (max-width: 576px) { .login-wrapper { margin: 1rem; } .login-form-side { padding: 1.5rem 1rem; } .login-image-side { min-height: 200px; } .login-form-side h2 { font-size: 1.5rem; } }
+
+        .login-form-side {
+            padding: 40px 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-image-side {
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 30px;
+        }
+
+        .brand-text-side {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .brand-text-side .brand-name {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #d4af37, #f5d76e, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+        }
+
+        .brand-text-side .brand-tagline {   
+            font-size: 0.7rem;
+            color: rgb(255, 255, 255);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        .single-image-container {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .single-image-container:hover {
+            transform: scale(1.02);
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.1);
+        }
+
+        .single-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+        }
+
+        .side-text {
+            text-align: center;
+            color: rgb(255, 255, 255);
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 20px;
+            font-weight: 300;
+        }
+
+        .side-text i {
+            color: rgba(212, 175, 55, 0.15);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .login-header .brand-name {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #d4af37, #f5d76e, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+        }
+
+        .login-header .brand-tagline {
+            font-size: 0.7rem;
+            color: rgb(255, 255, 255);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            font-weight: 400;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 20px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .login-subtitle {
+            font-size: 0.85rem;
+            color: rgb(255, 255, 255);
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.35);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: rgba(212, 175, 55, 0.3);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.05);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.41);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .password-toggle:hover {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            margin-top: 5px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: #d4af37;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .forgot-link:hover {
+            color: #d4af37;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #d4af37, #f5d76e);
+            border: none;
+            border-radius: 12px;
+            color: #0a0a0f;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 22px 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .divider-text {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.12);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            font-weight: 300;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            text-decoration: none;
+        }
+
+        .social-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(212, 175, 55, 0.12);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .social-btn i {
+            font-size: 0.9rem;
+        }
+
+        .social-btn.google i {
+            color: #ea4335;
+        }
+
+        .social-btn.facebook i {
+            color: #1877f2;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .login-footer a {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .login-footer a:hover {
+            color: #f5d76e;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: particleFloat linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.1; }
+            90% { opacity: 0.1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        @media (max-width: 900px) {
+            .login-wrapper {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+                min-height: auto;
+            }
+            .login-image-side {
+                display: none;
+            }
+            .login-form-side {
+                padding: 35px 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-form-side {
+                padding: 25px 18px;
+            }
+            .login-header .brand-name {
+                font-size: 1.5rem;
+            }
+            .login-title {
+                font-size: 1.2rem;
+            }
+            .social-login {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
-<body>
-    <div class="auth-container">
-        <div class="login-wrapper animate-zoom">
-            <div class="login-form-side">
-                <a href="index.php" class="auth-logo"><i class="fas fa-code"></i> CodeCraze &amp; Threads</a>
-                <h2>Welcome Back</h2>
-                <p class="subtitle">Login to continue your style journey</p>
-                <?php if ($error): ?><div class="alert alert-error"><?php echo $error; ?></div><?php endif; ?>
-                <form method="POST">
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($email); ?>" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-sign-in-alt"></i> Login</button>
-                    <div class="auth-footer"><p>Don't have an account? <a href="register.php">Register here</a></p></div>
-                </form>
+<body class="login-page">
+    <div class="particles" id="particles"></div>
+
+    <div class="login-wrapper animate-zoom">
+        <!-- Left Side - Login Form -->
+        <div class="login-form-side">
+            <div class="login-header">
+                <span class="brand-name">DRAVEX</span>
+                <div class="brand-tagline">WEAR CONFIDENCE</div>
+                
+                <h1 class="login-title">Welcome Back</h1>
+                <p class="login-subtitle">Login to continue to your account<br>and explore our latest collection.</p>
             </div>
-            <div class="login-image-side" id="sliderContainer">
-                <div class="slide active" style="background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);">
-                    <div class="slide-overlay"></div>
-                    <div class="slide-content"><i class="fas fa-tshirt"></i><h3>Premium Quality</h3><p>High-quality coding apparel designed for comfort and style</p></div>
+
+            <?php if ($error): ?>
+                <div class="alert-error"><?php echo $error; ?></div>
+            <?php endif; ?>
+
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label>Email or Phone Number</label>
+                    <input type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" placeholder="Enter your email" required>
                 </div>
-                <div class="slide" style="background: linear-gradient(135deg, #1a1a2e, #2d1b69, #0f3460);">
-                    <div class="slide-overlay"></div>
-                    <div class="slide-content"><i class="fas fa-code"></i><h3>Unique Designs</h3><p>Express your passion with our exclusive coding-themed designs</p></div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle" id="passwordToggle">
+                            <i class="fas fa-eye" id="passwordIcon"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="slide" style="background: linear-gradient(135deg, #0f3460, #16213e, #1a1a2e);">
-                    <div class="slide-overlay"></div>
-                    <div class="slide-content"><i class="fas fa-truck-fast"></i><h3>Fast Delivery</h3><p>Get your favorite coding gear delivered to your doorstep</p></div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember">
+                        <span>Remember Me</span>
+                    </label>
+                    <a href="#" class="forgot-link">Forgot Password?</a>
                 </div>
-                <div class="slide" style="background: linear-gradient(135deg, #2d1b69, #0f3460, #1a1a2e);">
-                    <div class="slide-overlay"></div>
-                    <div class="slide-content"><i class="fas fa-star"></i><h3>Customer Love</h3><p>Join thousands of satisfied developers who love our products</p></div>
-                </div>
-                <div class="slide-indicators">
-                    <span class="dot active" data-slide="0"></span>
-                    <span class="dot" data-slide="1"></span>
-                    <span class="dot" data-slide="2"></span>
-                    <span class="dot" data-slide="3"></span>
-                </div>
+
+                <button type="submit" class="login-btn">LOGIN</button>
+            </form>
+
+            <div class="divider">
+                <span class="divider-line"></span>
+                <span class="divider-text">OR CONTINUE WITH</span>
+                <span class="divider-line"></span>
+            </div>
+
+            <div class="social-login">
+                <a href="#" class="social-btn google">
+                    <i class="fab fa-google"></i> Google
+                </a>
+                <a href="#" class="social-btn facebook">
+                    <i class="fab fa-facebook-f"></i> Facebook
+                </a>
+            </div>
+
+            <div class="login-footer">
+                Don't have an account? <a href="register.php">Sign Up</a>
+            </div>
+        </div>
+
+
+        <div class="login-image-side">
+            <div class="brand-text-side">
+                <span class="brand-name">DRAVEX</span>
+                <div class="brand-tagline">BUILT DIFFERENT</div>
+            </div>
+
+            <div class="single-image-container">
+                <?php 
+                $image_path = $upload_dir . $display_image;
+                $image_exists = file_exists($image_path);
+                ?>
+                <?php if ($image_exists): ?>
+                    <img src="<?php echo $image_path; ?>" alt="DRAVEX Product" loading="lazy">
+                <?php else: ?>
+                    <div style="width:100%;height:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2d1b69,#1a0a2e);color:rgba(255,255,255,0.1);font-size:3rem;">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="side-text"> 
+                <span style="display: block; margin-top: 6px;">PREMIUM WEAR</span>
             </div>
         </div>
     </div>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var slides = document.querySelectorAll('.slide');
-        var dots = document.querySelectorAll('.dot');
-        var current = 0;
-        var interval;
-        function goToSlide(index) {
-            slides.forEach(function(s) { s.classList.remove('active'); });
-            dots.forEach(function(d) { d.classList.remove('active'); });
-            slides[index].classList.add('active');
-            dots[index].classList.add('active');
-            current = index;
-        }
-        function nextSlide() { goToSlide((current + 1) % slides.length); }
-        function startAutoSlide() { interval = setInterval(nextSlide, 4000); }
-        function stopAutoSlide() { clearInterval(interval); }
-        dots.forEach(function(dot, index) {
-            dot.addEventListener('click', function() {
-                stopAutoSlide();
-                goToSlide(index);
-                startAutoSlide();
+        // Password 
+        var toggleBtn = document.getElementById('passwordToggle');
+        var passwordInput = document.getElementById('password');
+        var icon = document.getElementById('passwordIcon');
+        
+        if (toggleBtn && passwordInput && icon) {
+            toggleBtn.addEventListener('click', function() {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    passwordInput.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
             });
-        });
-        var container = document.getElementById('sliderContainer');
-        container.addEventListener('mouseenter', stopAutoSlide);
-        container.addEventListener('mouseleave', startAutoSlide);
-        startAutoSlide();
+        }
+
+        //  for Particles
+        var particles = document.getElementById('particles');
+        if (particles) {
+            for (var i = 0; i < 25; i++) {
+                var p = document.createElement('div');
+                p.className = 'particle';
+                var s = Math.random() * 4 + 2;
+                p.style.width = s + 'px';
+                p.style.height = s + 'px';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = Math.random() * 20 + 10 + 's';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.background = Math.random() > 0.5 ? '#d4af37' : '#8b5cf6';
+                particles.appendChild(p);
+            }
+        }
     });
     </script>
-    <script src="js/script.js"></script>
 </body>
-</html> 
+</html>
