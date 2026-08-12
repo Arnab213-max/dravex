@@ -292,7 +292,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="admin-login-header">
                 <span class="brand-name">DRAVEX</span>
                 <div class="brand-tagline">WEAR CONFIDENCE</div>
-                <i class="fas fa-cog"></i>
                 <h2>Admin Login</h2>
                 <p>Enter your credentials to access the admin panel</p>
             </div>

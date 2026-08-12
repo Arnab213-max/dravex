@@ -1,13 +1,13 @@
 <?php
+
+
 if (!isset($_SESSION)) {
     session_start();
 }
-
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
     header('Location: ../login.php');
     exit();
 }
-
 require_once '../config/database.php';
 $user_id = $_SESSION['user_id'];
 $user_query = "SELECT * FROM users WHERE id = $user_id";
@@ -31,6 +31,7 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
     <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" href="../../css/glass.css">
     <link rel="stylesheet" href="../../css/animations.css">
+    <link rel="stylesheet" href="../../css/admin.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -46,8 +47,9 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
         }
         .admin-sidebar {
             width: 260px;
-            background: rgba(10, 10, 15, 0.92);
+            background: rgba(10, 10, 15, 0.95);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-right: 1px solid rgba(212, 175, 55, 0.06);
             padding: 1.5rem 1.2rem;
             position: fixed;
@@ -63,6 +65,7 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
         .admin-sidebar::-webkit-scrollbar { width: 3px; }
         .admin-sidebar::-webkit-scrollbar-track { background: transparent; }
         .admin-sidebar::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 2px; }
+
         .sidebar-brand {
             text-align: center;
             padding-bottom: 1.5rem;
@@ -75,7 +78,10 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             font-weight: 900;
             letter-spacing: 2px;
         }
-        .sidebar-brand h2 i { color: #d4af37; margin-right: 0.5rem; }
+        .sidebar-brand h2 i {
+            color: #d4af37;
+            margin-right: 0.5rem;
+        }
         .sidebar-brand span {
             color: rgba(255, 255, 255, 0.2);
             font-size: 0.7rem;
@@ -83,6 +89,8 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             letter-spacing: 3px;
             margin-top: 0.2rem;
         }
+
+        /* Sidebar Profile */
         .sidebar-profile {
             text-align: center;
             padding: 1rem 0 1.5rem;
@@ -110,8 +118,16 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             color: rgba(255, 255, 255, 0.15);
             font-size: 2rem;
         }
-        .sidebar-user strong { display: block; color: #ffffff; font-size: 0.95rem; }
-        .sidebar-user span { color: rgba(255, 255, 255, 0.3); font-size: 0.7rem; display: block; }
+        .sidebar-user strong {
+            display: block;
+            color: #ffffff;
+            font-size: 0.95rem;
+        }
+        .sidebar-user span {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.7rem;
+            display: block;
+        }
         .sidebar-user .role-badge {
             display: inline-block;
             background: linear-gradient(135deg, #d4af37, #f5d76e);
@@ -124,13 +140,17 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             letter-spacing: 0.5px;
             margin-top: 0.3rem;
         }
+
+        /* Sidebar Navigation */
         .sidebar-nav ul {
             list-style: none;
             padding: 0;
             margin: 0;
             flex: 1;
         }
-        .sidebar-nav ul li { margin-bottom: 0.2rem; }
+        .sidebar-nav ul li {
+            margin-bottom: 0.2rem;
+        }
         .sidebar-nav ul li a {
             display: flex;
             align-items: center;
@@ -156,6 +176,8 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             text-align: center;
             font-size: 0.95rem;
         }
+
+        /* Sidebar Logout */
         .sidebar-logout {
             margin-top: auto;
             padding-top: 1rem;
@@ -184,6 +206,56 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             min-height: 100vh;
             width: calc(100% - 260px);
         }
+
+        /* Admin Header */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .admin-header h1 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .admin-header h1 i {
+            color: #d4af37;
+            margin-right: 0.5rem;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .admin-user span {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        .admin-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #d4af37;
+        }
+        .admin-avatar-fallback {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2d1b69, #1a0a2e);
+            border: 2px solid #d4af37;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 1.2rem;
+        }
+
+        /* Mobile Toggle */
         .sidebar-toggle {
             display: none;
             position: fixed;
@@ -199,10 +271,23 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             cursor: pointer;
             font-size: 1.2rem;
         }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
         @media (max-width: 992px) {
             .admin-sidebar { width: 220px; padding: 1rem; }
             .admin-content { margin-left: 220px; width: calc(100% - 220px); padding: 1.5rem; }
+            .sidebar-avatar,
+            .sidebar-avatar-fallback { width: 55px; height: 55px; font-size: 1.5rem; }
         }
+
         @media (max-width: 768px) {
             .sidebar-toggle { display: block; }
             .admin-sidebar {
@@ -221,28 +306,26 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
                 padding: 1rem;
                 padding-top: 4.5rem;
             }
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 99;
-            }
             .sidebar-overlay.active { display: block; }
         }
+
         @media (max-width: 576px) {
             .admin-content { padding: 0.75rem; padding-top: 4.5rem; }
             .admin-sidebar { width: 100%; max-width: 320px; }
+            .admin-header { flex-direction: column; gap: 0.5rem; text-align: center; }
+            .admin-header h1 { font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Toggle -->
     <button class="sidebar-toggle" id="sidebarToggle">
         <i class="fas fa-bars"></i>
     </button>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="admin-wrapper">
+        <!-- Sidebar -->
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-brand">
                 <h2><i class="fas fa-crown"></i> DRAVEX</h2>
@@ -251,7 +334,9 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
 
             <div class="sidebar-profile">
                 <?php if ($use_fallback): ?>
-                    <div class="sidebar-avatar-fallback"><i class="fas fa-user"></i></div>
+                    <div class="sidebar-avatar-fallback">
+                        <i class="fas fa-user"></i>
+                    </div>
                 <?php else: ?>
                     <img src="../../uploads/<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="sidebar-avatar">
                 <?php endif; ?>
@@ -264,27 +349,41 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
 
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-chart-line"></i> Dashboard
-                    </a></li>
-                    <li><a href="products.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'products.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-box"></i> Products
-                    </a></li>
-                    <li><a href="add_product.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'add_product.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-plus-circle"></i> Add Product
-                    </a></li>
-                    <li><a href="categories.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'categories.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-tags"></i> Categories
-                    </a></li>
-                    <li><a href="orders.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'orders.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-shopping-cart"></i> Orders
-                    </a></li>
-                    <li><a href="users.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-users"></i> Users
-                    </a></li>
-                    <li><a href="change_password.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'change_password.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-key"></i> Change Password
-                    </a></li>
+                    <li>
+                        <a href="dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="products.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'products.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                    </li>
+                    <li>
+                        <a href="add_product.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'add_product.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-plus-circle"></i> Add Product
+                        </a>
+                    </li>
+                    <li>
+                        <a href="categories.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'categories.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-tags"></i> Categories
+                        </a>
+                    </li>
+                    <li>
+                        <a href="orders.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'orders.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-shopping-cart"></i> Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a href="users.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                    </li>
+                    <li>
+                        <a href="change_password.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'change_password.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-key"></i> Change Password
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
@@ -295,4 +394,33 @@ $use_fallback = !file_exists('../../uploads/default.jpg');
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="admin-content" id="adminContent">
+            <!-- Admin Header -->
+            <header class="admin-header">
+                <h1>
+                    <i class="fas fa-chart-line"></i> 
+                    <?php 
+                        $page_name = basename($_SERVER['PHP_SELF']);
+                        if ($page_name == 'dashboard.php') echo 'Dashboard';
+                        elseif ($page_name == 'products.php') echo 'Products';
+                        elseif ($page_name == 'add_product.php') echo 'Add Product';
+                        elseif ($page_name == 'edit_product.php') echo 'Edit Product';
+                        elseif ($page_name == 'categories.php') echo 'Categories';
+                        elseif ($page_name == 'orders.php') echo 'Orders';
+                        elseif ($page_name == 'users.php') echo 'Users';
+                        elseif ($page_name == 'change_password.php') echo 'Change Password';
+                        else echo 'Admin Panel';
+                    ?>
+                </h1>
+                <div class="admin-user">
+                    <span><?php echo htmlspecialchars($admin_user['full_name'] ?? 'Admin'); ?></span>
+                    <?php if ($use_fallback): ?>
+                        <div class="admin-avatar-fallback">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    <?php else: ?>
+                        <img src="../../uploads/<?php echo htmlspecialchars($profile_image); ?>" alt="Profile" class="admin-avatar">
+                    <?php endif; ?>
+                </div>
+            </header>
