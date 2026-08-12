@@ -1,10 +1,4 @@
 <?php
-/**
- * Admin Add Product - Full Screen Design
- * DRAVEX - Premium Streetwear E-Commerce Platform
- */
-
-// Start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -12,13 +6,12 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once '../config/database.php';
 require_once '../config/session.php';
 
-// Check if logged in as admin
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
     header('Location: login.php');
     exit();
 }
 
-// Get categories for dropdown
+
 $categories = executeQuery("SELECT * FROM categories ORDER BY name");
 $errors = [];
 $form_data = ['name' => '', 'description' => '', 'price' => '', 'discount_price' => '', 'quantity' => '', 'category_id' => ''];

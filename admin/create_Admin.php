@@ -11,18 +11,18 @@ $email = 'admin@dravex.com';
 $password = 'admin123';
 $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-echo "<h2>🔐 Creating Admin User...</h2>";
+echo "<h2> Creating Admin User...</h2>";
 
-// Check if admin exists
+
 $check = executeQuery("SELECT id FROM users WHERE email = '$email'");
 
 if (mysqli_num_rows($check) > 0) {
     // Update password
     $update = executeQuery("UPDATE users SET password = '$hashed' WHERE email = '$email'");
     if ($update) {
-        echo "✅ Admin password updated to: <strong>$password</strong><br>";
+        echo " Admin password updated to: <strong>$password</strong><br>";
     } else {
-        echo "❌ Failed to update password!<br>";
+        echo " Failed to update password!<br>";
     }
 } else {
     // Create new admin
@@ -30,9 +30,9 @@ if (mysqli_num_rows($check) > 0) {
     if ($insert) {
         $user_id = mysqli_insert_id($conn);
         executeQuery("INSERT INTO admin (user_id, admin_level) VALUES ($user_id, 'super')");
-        echo "✅ Admin created successfully!<br>";
+        echo " Admin created successfully!<br>";
     } else {
-        echo "❌ Failed to create admin!<br>";
+        echo " Failed to create admin!<br>";
     }
 }
 

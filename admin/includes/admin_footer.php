@@ -1,15 +1,11 @@
 <?php
-/**
- * Admin Footer Template
- * DRAVEX - Premium Streetwear E-Commerce Platform
- * Location: project_I/admin/includes/admin_footer.php
- */
+
 ?>
         </main>
     </div>
 
     <script>
-    // Mobile sidebar toggle
+    // sidebar toggle
     document.addEventListener('DOMContentLoaded', function() {
         const toggle = document.getElementById('sidebarToggle');
         const sidebar = document.getElementById('adminSidebar');

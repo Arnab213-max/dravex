@@ -1,10 +1,4 @@
 <?php
-/**
- * Admin Categories Management
- * DRAVEX - Premium Streetwear E-Commerce Platform
- */
-
-// Start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -12,13 +6,11 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once '../config/database.php';
 require_once '../config/session.php';
 
-// Check if logged in as admin
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
     header('Location: login.php');
     exit();
 }
 
-// Handle Add Category
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
     $name = sanitizeInput($_POST['name']);
     $description = sanitizeInput($_POST['description']);
