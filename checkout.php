@@ -9,11 +9,11 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Getting  user data
+// Get user data
 $user_result = executeQuery("SELECT * FROM users WHERE id = $user_id");
 $user = mysqli_fetch_assoc($user_result);
 
-// Gettting  cart items
+// Get cart items
 $cart_query = "
     SELECT c.*, p.name, p.price, p.discount_price, p.image, p.quantity as stock 
     FROM cart c 
@@ -43,7 +43,7 @@ if (empty($cart_items)) {
 
 $tax = $subtotal * 0.05;
 $total = $subtotal + $tax;
-$errors = [];
+$errors = array();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     $full_name = sanitizeInput($_POST['full_name']);
@@ -55,6 +55,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     $zipcode = sanitizeInput($_POST['zipcode']);
     $delivery_date = $_POST['delivery_date'];
     $payment_method = $_POST['payment_method'];
+    
+    // Card details (only if card payment selected)
+    if ($payment_method === 'Card') {
+        $card_number = str_replace(' ', '', $_POST['card_number']);
+        $card_name = sanitizeInput($_POST['card_name']);
+        $card_expiry = $_POST['card_expiry'];
+        $card_cvv = $_POST['card_cvv'];
+        
+        // Basic card validation
+        if (empty($card_number) || strlen($card_number) != 16) {
+            $errors['card_number'] = 'Please enter a valid 16-digit card number';
+        }
+        if (empty($card_name)) {
+            $errors['card_name'] = 'Name on card is required';
+        }
+        if (empty($card_expiry)) {
+            $errors['card_expiry'] = 'Expiry date is required';
+        }
+        if (empty($card_cvv) || strlen($card_cvv) < 3) {
+            $errors['card_cvv'] = 'Please enter a valid CVV';
+        }
+    }
     
     if (empty($full_name)) $errors['full_name'] = 'Full name is required';
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Valid email is required';
@@ -122,7 +144,7 @@ include 'includes/header.php';
                     <h3 style="color:var(--gold); margin-bottom:var(--spacing-md);">
                         <i class="fas fa-address-card"></i> Billing Details
                     </h3>
-                    <form method="POST">
+                    <form method="POST" id="checkoutForm">
                         <div class="form-group">
                             <label>Full Name *</label>
                             <input type="text" name="full_name" class="form-control" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
@@ -166,21 +188,67 @@ include 'includes/header.php';
                             <small class="text-muted">Only today and tomorrow can be selected</small>
                             <div class="form-error"><?php echo isset($errors['delivery_date']) ? $errors['delivery_date'] : ''; ?></div>
                         </div>
+                        
+                        <!-- Payment Method -->
                         <div class="form-group">
                             <label>Payment Method *</label>
-                            <div class="payment-options">
+                            <div class="payment-methods">
                                 <label class="payment-option">
-                                    <input type="radio" name="payment_method" value="COD" checked>
+                                    <input type="radio" name="payment_method" value="COD" checked onclick="document.getElementById('cardPaymentForm').style.display='none'">
                                     <span><i class="fas fa-money-bill-wave"></i> Cash on Delivery</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="Card" onclick="document.getElementById('cardPaymentForm').style.display='block'">
+                                    <span><i class="fas fa-credit-card"></i> Credit/Debit Card</span>
                                 </label>
                             </div>
                         </div>
-                        <button type="submit" name="place_order" class="btn btn-primary w-100">
+                        
+                        <!-- Card Payment Form (Hidden by default) -->
+                        <div id="cardPaymentForm" style="display:none; margin-top:var(--spacing-md); padding:var(--spacing-md); background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(212,175,55,0.08);">
+                            <h4 style="color:var(--gold); margin-bottom:var(--spacing-md);"><i class="fas fa-credit-card"></i> Card Details</h4>
+                            
+                            <div class="form-group">
+                                <label>Card Number *</label>
+                                <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCardNumber(this)">
+                                <div class="form-error"><?php echo isset($errors['card_number']) ? $errors['card_number'] : ''; ?></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Name on Card *</label>
+                                <input type="text" name="card_name" id="card_name" class="form-control" placeholder="John Doe">
+                                <div class="form-error"><?php echo isset($errors['card_name']) ? $errors['card_name'] : ''; ?></div>
+                            </div>
+                            
+                            <div class="row row-2" style="gap:var(--spacing-md);">
+                                <div class="form-group">
+                                    <label>Expiry Date *</label>
+                                    <input type="month" name="card_expiry" id="card_expiry" class="form-control">
+                                    <div class="form-error"><?php echo isset($errors['card_expiry']) ? $errors['card_expiry'] : ''; ?></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>CVV *</label>
+                                    <input type="password" name="card_cvv" id="card_cvv" class="form-control" placeholder="123" maxlength="4">
+                                    <div class="form-error"><?php echo isset($errors['card_cvv']) ? $errors['card_cvv'] : ''; ?></div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-icons" style="display:flex; gap:var(--spacing-sm); margin-top:var(--spacing-sm);">
+                                <i class="fab fa-cc-visa" style="font-size:2rem; color:rgba(255,255,255,0.2);"></i>
+                                <i class="fab fa-cc-mastercard" style="font-size:2rem; color:rgba(255,255,255,0.2);"></i>
+                                <i class="fab fa-cc-amex" style="font-size:2rem; color:rgba(255,255,255,0.2);"></i>
+                                <i class="fab fa-cc-discover" style="font-size:2rem; color:rgba(255,255,255,0.2);"></i>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" name="place_order" class="btn btn-primary w-100" style="margin-top:var(--spacing-md);">
                             <i class="fas fa-check-circle"></i> Place Order
                         </button>
                     </form>
                 </div>
             </div>
+            
+            <!-- Order Summary -->
             <div>
                 <div class="glass-card" style="position:sticky; top:100px;">
                     <h3 style="color:var(--gold); margin-bottom:var(--spacing-md);">
@@ -208,6 +276,20 @@ include 'includes/header.php';
 </main>
 
 <script>
+// Format Card Number with spaces
+function formatCardNumber(input) {
+    var value = input.value.replace(/\s/g, '');
+    var formatted = '';
+    for (var i = 0; i < value.length; i++) {
+        if (i > 0 && i % 4 === 0) {
+            formatted += ' ';
+        }
+        formatted += value[i];
+    }
+    input.value = formatted;
+}
+
+// Delivery Date Validation
 document.addEventListener('DOMContentLoaded', function() {
     var deliveryDate = document.getElementById('delivery_date');
     if (deliveryDate) {
@@ -217,6 +299,93 @@ document.addEventListener('DOMContentLoaded', function() {
         deliveryDate.setAttribute('max', tomorrow);
     }
 });
+
+// Form validation
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    var paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+    if (paymentMethod && paymentMethod.value === 'Card') {
+        var cardNumber = document.getElementById('card_number');
+        var cardName = document.getElementById('card_name');
+        var cardExpiry = document.getElementById('card_expiry');
+        var cardCvv = document.getElementById('card_cvv');
+        
+        var isValid = true;
+        
+        if (cardNumber.value.replace(/\s/g, '').length !== 16) {
+            alert('Please enter a valid 16-digit card number');
+            isValid = false;
+        }
+        if (!cardName.value.trim()) {
+            alert('Please enter name on card');
+            isValid = false;
+        }
+        if (!cardExpiry.value) {
+            alert('Please select expiry date');
+            isValid = false;
+        }
+        if (cardCvv.value.length < 3) {
+            alert('Please enter valid CVV');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    }
+});
 </script>
+
+<style>
+.payment-methods {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 0.75rem 1.5rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(212,175,55,0.08);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-option:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(212,175,55,0.2);
+}
+
+.payment-option input[type="radio"] {
+    accent-color: #d4af37;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.payment-option span {
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.payment-option span i {
+    color: var(--gold);
+    width: 20px;
+}
+
+.card-icons i {
+    transition: all 0.3s ease;
+}
+
+.card-icons i:hover {
+    color: var(--gold) !important;
+    transform: scale(1.1);
+}
+</style>
 
 <?php include 'includes/footer.php'; ?>

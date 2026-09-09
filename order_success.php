@@ -66,7 +66,15 @@ include 'includes/header.php';
                     </div>
                     <div class="detail-row">
                         <span>Payment Method:</span>
-                        <strong><?php echo htmlspecialchars($order['payment_method']); ?></strong>
+                        <strong>
+                            <?php 
+                            if ($order['payment_method'] == 'COD') {
+                                echo '<i class="fas fa-money-bill-wave" style="color:var(--gold);"></i> Cash on Delivery';
+                            } else {
+                                echo '<i class="fas fa-credit-card" style="color:var(--gold);"></i> Card Payment';
+                            }
+                            ?>
+                        </strong>
                     </div>
                     <div class="detail-row">
                         <span>Status:</span>
@@ -84,6 +92,14 @@ include 'includes/header.php';
                                 <span>₹<?php echo number_format($item['price'] * $item['quantity'], 2); ?></span>
                             </div>
                         <?php endwhile; ?>
+                    </div>
+                </div>
+
+                <!-- Payment Status -->
+                <div class="payment-status" style="margin:1.5rem 0; padding:1rem; background:rgba(16,185,129,0.05); border-radius:8px; border:1px solid rgba(16,185,129,0.1);">
+                    <div style="display:flex; align-items:center; gap:0.5rem; justify-content:center;">
+                        <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                        <span style="color:var(--success);">Payment Successful</span>
                     </div>
                 </div>
 
@@ -179,6 +195,10 @@ include 'includes/header.php';
     flex-wrap: wrap;
 }
 
+.payment-status {
+    animation: fadeIn 0.5s ease;
+}
+
 @media (max-width: 768px) {
     .success-actions {
         flex-direction: column;
@@ -196,4 +216,4 @@ include 'includes/header.php';
 }
 </style>
 
-<?php include 'includes/footer.php'; ?>
+<?php include 'includes/footer.php'; ?> 

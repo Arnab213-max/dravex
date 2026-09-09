@@ -1,4 +1,5 @@
 <?php
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -11,7 +12,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || $_SESSION[
     exit();
 }
 
-// Updating the  order status
+// Update order status
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $order_id = (int)$_POST['order_id'];
     $status = $_POST['status'];
@@ -25,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     exit();
 }
 
-// Getting  all orders with user details
+// Get all orders with user details
 $orders = executeQuery("
     SELECT o.*, u.full_name, u.email, u.phone 
     FROM orders o 
@@ -55,7 +56,7 @@ include 'includes/admin_header.php';
                     <tr>
                         <th>Order #</th>
                         <th>Customer</th>
-                        <th>Email</th>
+                        <th>Payment</th>
                         <th>Amount</th>
                         <th>Status</th>
                         <th>Date</th>
@@ -67,12 +68,18 @@ include 'includes/admin_header.php';
                         <tr>
                             <td><strong><?php echo htmlspecialchars($order['order_number']); ?></strong></td>
                             <td><?php echo htmlspecialchars($order['full_name']); ?></td>
-                            <td><?php echo htmlspecialchars($order['email']); ?></td>
-                            <td>₹<?php echo number_format($order['total_amount'], 2); ?></td>
                             <td>
-                                <form method="POST" style="display:flex; gap:5px; align-items:center;">
+                                <?php if ($order['payment_method'] == 'COD'): ?>
+                                    <span style="color:var(--gold);"><i class="fas fa-money-bill-wave"></i> COD</span>
+                                <?php else: ?>
+                                    <span style="color:var(--success);"><i class="fas fa-credit-card"></i> Card</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>Rs.?php echo number_format($order['total_amount'], 2); ?></td>
+                            <td>
+                                <form method="POST" style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
                                     <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                    <select name="status" class="form-control" style="width:auto; padding:5px;">
+                                    <select name="status" class="status-dropdown">
                                         <option value="pending" <?php echo $order['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
                                         <option value="processing" <?php echo $order['status'] == 'processing' ? 'selected' : ''; ?>>Processing</option>
                                         <option value="completed" <?php echo $order['status'] == 'completed' ? 'selected' : ''; ?>>Completed</option>
@@ -171,6 +178,53 @@ include 'includes/admin_header.php';
     background: rgba(255,255,255,0.02);
 }
 
+/* ============================================
+   FIXED DROPDOWN STYLES
+   ============================================ */
+.status-dropdown {
+    padding: 0.3rem 0.8rem;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(212,175,55,0.15);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 110px;
+    font-family: 'Inter', sans-serif;
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+}
+
+.status-dropdown:hover {
+    border-color: rgba(212,175,55,0.3);
+    background: rgba(255,255,255,0.12);
+}
+
+.status-dropdown:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
+}
+
+.status-dropdown option {
+    background: #1a0a2e;
+    color: #ffffff;
+    padding: 5px 10px;
+    font-family: 'Inter', sans-serif;
+}
+
+.status-dropdown option:hover {
+    background: rgba(212,175,55,0.2);
+}
+
+/* Status Colors */
+.status-dropdown option[value="pending"] { color: #f59e0b; }
+.status-dropdown option[value="processing"] { color: #3b82f6; }
+.status-dropdown option[value="completed"] { color: #10b981; }
+.status-dropdown option[value="cancelled"] { color: #ef4444; }
+
 .btn-sm {
     padding: 0.3rem 0.8rem;
     font-size: 0.75rem;
@@ -183,6 +237,7 @@ include 'includes/admin_header.php';
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-weight: 600;
 }
 
 .btn-primary:hover {
@@ -198,20 +253,15 @@ include 'includes/admin_header.php';
     border-radius: 6px;
     text-decoration: none;
     transition: all 0.3s ease;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .btn-secondary:hover {
     background: rgba(255,255,255,0.08);
     color: #ffffff;
-}
-
-.form-control {
-    padding: 0.3rem 0.5rem;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(212,175,55,0.08);
-    border-radius: 6px;
-    color: #ffffff;
-    font-size: 0.8rem;
 }
 
 .alert {
@@ -247,14 +297,40 @@ include 'includes/admin_header.php';
     color: rgba(255,255,255,0.3);
 }
 
+/* Responsive */
 @media (max-width: 768px) {
     .orders-table th,
     .orders-table td {
         padding: 0.5rem 0.3rem;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
     .table-wrapper {
         padding: 1rem;
+    }
+    .status-dropdown {
+        min-width: 80px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-header h1 {
+        font-size: 1.3rem;
+    }
+    .orders-table th,
+    .orders-table td {
+        padding: 0.3rem 0.2rem;
+        font-size: 0.6rem;
+    }
+    .status-dropdown {
+        min-width: 60px;
+        padding: 0.15rem 0.3rem;
+        font-size: 0.6rem;
+    }
+    .btn-sm {
+        padding: 0.15rem 0.5rem;
+        font-size: 0.6rem;
     }
 }
 </style>
