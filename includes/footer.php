@@ -41,6 +41,17 @@
             <p>&copy; <?php echo date('Y'); ?> DRAVEX. All rights reserved.</p>
         </div>
     </div>
+
+<div class="newsletter-section">
+    <div class="newsletter-content">
+        <h4>Subscribe to our Newsletter</h4>
+        <p>Get the latest updates on new arrivals and exclusive offers</p>
+    </div>
+    <form class="newsletter-form" method="POST" action="newsletter.php">
+        <input type="email" name="email" placeholder="Enter your email" required>
+        <button type="submit" name="subscribe" class="btn btn-primary">Subscribe</button>
+    </form>
+</div>
 </footer>
 </body>
 </html>

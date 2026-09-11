@@ -103,7 +103,6 @@ a:hover {
     padding: 0 var(--spacing-lg);
 }
 
-/* Theme Selector */
 .theme-selector {
     display: flex;
     align-items: center;
@@ -114,7 +113,7 @@ a:hover {
 .theme-selector select {
     background: rgba(255,255,255,0.05);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(212,175,55,0.2);
+    border: 1px solid rgba(13, 224, 206, 0.2);
     border-radius: var(--radius-md);
     color: var(--text-primary);
     padding: 5px 10px;
@@ -576,9 +575,7 @@ body {
 .products-section {
     padding: var(--spacing-xl) 0;
 }
-/* ============================================
-   PRODUCT DETAIL PAGE
-   ============================================ */
+/* PRODUCT DETAIL PAGE*/
 
 .product-gallery {
     position: relative;
@@ -939,13 +936,9 @@ body {
     opacity: 0.15;
     animation: particleFloat linear infinite;
 }
-/* ============================================
-   THEME COLORS
-   ============================================ */
 
-/* Default Theme */
 [data-theme="default"] {
-    --gold: #d4af37;
+    --gold: #54d437;
     --gold-gradient: linear-gradient(135deg, #d4af37, #f5d76e, #d4af37);
     --purple: #8b5cf6;
     --purple-gradient: linear-gradient(135deg, #8b5cf6, #6d28d9);
@@ -1063,7 +1056,6 @@ body {
     background: radial-gradient(ellipse at 20% 50%, #1a1a1a, #0a0a0f 70%);
 }
 
-/* Smooth transition for theme changes */
 html {
     transition: background 0.5s ease;
 }
