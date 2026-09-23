@@ -117,7 +117,7 @@ include 'includes/admin_header.php';
             <!-- Description -->
             <div class="form-group">
                 <label>Description <span class="required">*</span></label>
-                <textarea name="description" class="form-control" rows="4" placeholder="Enter product description"><?php echo htmlspecialchars($form_data['description']); ?></textarea>
+                <textarea name="description" class="form-control" rows="3" placeholder="Enter product description"><?php echo htmlspecialchars($form_data['description']); ?></textarea>
                 <?php if (isset($errors['description'])): ?>
                     <div class="form-error"><?php echo $errors['description']; ?></div>
                 <?php endif; ?>
@@ -149,7 +149,7 @@ include 'includes/admin_header.php';
 
             <!-- Image Section -->
             <div class="image-section">
-                <label>Current Image</label>
+                <div class="image-section-title">Current Image</div>
                 <div class="current-image-container">
                     <?php 
                     $img_path = '../uploads/' . $product['image'];
@@ -158,23 +158,22 @@ include 'includes/admin_header.php';
                         <img src="<?php echo $img_path; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="current-image">
                     <?php else: ?>
                         <div class="no-image-placeholder">
-                            <i class="fas fa-tshirt"></i>
-                            <span>No image uploaded</span>
+                            <i class="fas fa-image"></i>
+                            <span>No image</span>
                         </div>
                     <?php endif; ?>
                 </div>
 
                 <div class="change-image-section">
-                    <label>Change Image</label>
+                    <div class="change-image-title">Change Image</div>
                     <div class="file-input-wrapper">
-                        <input type="file" name="image" id="imageInput" accept="image/*" onchange="previewImage(event)">
                         <label for="imageInput" class="file-input-label">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <span>Choose File</span>
+                            <i class="fas fa-upload"></i> Choose File
                         </label>
+                        <input type="file" name="image" id="imageInput" accept="image/*" onchange="previewImage(event)">
                         <span class="file-name" id="fileName">No file chosen</span>
                     </div>
-                    <small class="text-muted">Leave empty to keep current image</small>
+                    <div class="image-hint">Leave empty to keep current image</div>
                     <?php if (isset($errors['image'])): ?>
                         <div class="form-error"><?php echo $errors['image']; ?></div>
                     <?php endif; ?>
@@ -182,36 +181,14 @@ include 'includes/admin_header.php';
 
                 <!-- Image Preview -->
                 <div class="image-preview-container" id="imagePreviewContainer" style="display:none;">
-                    <label>New Image Preview</label>
+                    <div class="image-preview-title">New Image Preview</div>
                     <div class="image-preview" id="imagePreview">
                         <img src="" alt="Preview">
                     </div>
                 </div>
             </div>
 
-            <!-- Featured Settings -->
-            <div class="status-section">
-                <label>Product Status</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-item">
-                        <input type="checkbox" name="featured" value="1" <?php echo $form_data['featured'] ? 'checked' : ''; ?>>
-                        <span class="checkmark"></span>
-                        <span class="checkbox-label">Featured Product</span>
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="checkbox" name="trending" value="1" <?php echo $form_data['trending'] ? 'checked' : ''; ?>>
-                        <span class="checkmark"></span>
-                        <span class="checkbox-label">Trending Product</span>
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="checkbox" name="latest" value="1" <?php echo $form_data['latest'] ? 'checked' : ''; ?>>
-                        <span class="checkmark"></span>
-                        <span class="checkbox-label">Latest Arrival</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Actions -->
+            <!-- Form Actions -->
             <div class="form-actions">
                 <button type="submit" class="btn btn-update">
                     <i class="fas fa-save"></i> Update Product
@@ -225,14 +202,14 @@ include 'includes/admin_header.php';
 </div>
 
 <style>
-
-
+/* Clean Edit Product Page */
 .edit-product-page {
     padding: 0;
     max-width: 800px;
     margin: 0 auto;
 }
 
+/* Page Header */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -246,6 +223,7 @@ include 'includes/admin_header.php';
     color: #ffffff;
     font-size: 2rem;
     font-weight: 700;
+    margin: 0;
 }
 
 .page-header h1 i {
@@ -258,10 +236,10 @@ include 'includes/admin_header.php';
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.08);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,175,55,0.08);
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255,255,255,0.7);
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 0.85rem;
@@ -269,11 +247,12 @@ include 'includes/admin_header.php';
 }
 
 .btn-back:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255,255,255,0.08);
     transform: translateY(-2px);
     color: #ffffff;
 }
 
+/* Alert */
 .alert {
     padding: 1rem 1.5rem;
     border-radius: 8px;
@@ -281,20 +260,19 @@ include 'includes/admin_header.php';
 }
 
 .alert-success {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.2);
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.2);
     color: #10b981;
 }
 
-
+/* Form Container */
 .edit-form-container {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255,255,255,0.02);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(212, 175, 55, 0.06);
+    border: 1px solid rgba(212,175,55,0.06);
     border-radius: 16px;
     padding: 2rem;
 }
-
 
 .edit-form {
     display: flex;
@@ -302,6 +280,7 @@ include 'includes/admin_header.php';
     gap: 1.5rem;
 }
 
+/* Form Groups */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -309,7 +288,7 @@ include 'includes/admin_header.php';
 }
 
 .form-group label {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255,255,255,0.7);
     font-size: 0.85rem;
     font-weight: 500;
 }
@@ -321,8 +300,8 @@ include 'includes/admin_header.php';
 .form-control {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.08);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,175,55,0.08);
     border-radius: 8px;
     color: #ffffff;
     font-size: 0.95rem;
@@ -332,12 +311,12 @@ include 'includes/admin_header.php';
 
 .form-control:focus {
     outline: none;
-    border-color: rgba(212, 175, 55, 0.3);
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.05);
+    border-color: rgba(212,175,55,0.3);
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.05);
 }
 
 .form-control::placeholder {
-    color: rgba(255, 255, 255, 0.15);
+    color: rgba(255,255,255,0.15);
 }
 
 .form-control.error {
@@ -357,16 +336,20 @@ select.form-control option {
 
 textarea.form-control {
     resize: vertical;
-    min-height: 100px;
+    min-height: 80px;
 }
+
+/* Two Column Layout */
 .form-row.two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
 }
+
+/* Image Section */
 .image-section {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(212, 175, 55, 0.06);
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(212,175,55,0.06);
     border-radius: 12px;
     padding: 1.5rem;
     display: flex;
@@ -374,8 +357,8 @@ textarea.form-control {
     gap: 1rem;
 }
 
-.image-section > label {
-    color: rgba(255, 255, 255, 0.7);
+.image-section-title {
+    color: rgba(255,255,255,0.6);
     font-size: 0.85rem;
     font-weight: 500;
 }
@@ -383,17 +366,19 @@ textarea.form-control {
 .current-image-container {
     display: flex;
     justify-content: center;
+    align-items: center;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255,255,255,0.02);
     border-radius: 8px;
+    min-height: 150px;
+    border: 1px solid rgba(212,175,55,0.05);
 }
 
 .current-image {
-    max-width: 200px;
-    max-height: 200px;
+    max-width: 150px;
+    max-height: 150px;
     object-fit: cover;
     border-radius: 8px;
-    border: 1px solid rgba(212, 175, 55, 0.08);
 }
 
 .no-image-placeholder {
@@ -401,26 +386,27 @@ textarea.form-control {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.15);
+    color: rgba(255,255,255,0.15);
 }
 
 .no-image-placeholder i {
-    font-size: 3rem;
+    font-size: 2.5rem;
 }
 
 .no-image-placeholder span {
     font-size: 0.85rem;
 }
 
+/* Change Image */
 .change-image-section {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.change-image-section label {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.8rem;
+.change-image-title {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
     font-weight: 500;
 }
 
@@ -440,18 +426,18 @@ textarea.form-control {
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.08);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,175,55,0.08);
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255,255,255,0.7);
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.85rem;
 }
 
 .file-input-label:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(212, 175, 55, 0.15);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(212,175,55,0.15);
 }
 
 .file-input-label i {
@@ -459,31 +445,31 @@ textarea.form-control {
 }
 
 .file-name {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255,255,255,0.3);
     font-size: 0.85rem;
 }
 
-.text-muted {
-    color: rgba(255, 255, 255, 0.2);
+.image-hint {
+    color: rgba(255,255,255,0.2);
     font-size: 0.75rem;
-    margin-top: 0.25rem;
 }
 
+/* Image Preview */
 .image-preview-container {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.image-preview-container label {
-    color: rgba(255, 255, 255, 0.6);
+.image-preview-title {
+    color: rgba(255,255,255,0.6);
     font-size: 0.8rem;
     font-weight: 500;
 }
 
 .image-preview {
-    max-width: 200px;
-    border: 1px solid rgba(212, 175, 55, 0.08);
+    max-width: 150px;
+    border: 1px solid rgba(212,175,55,0.08);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -494,80 +480,7 @@ textarea.form-control {
     display: block;
 }
 
-.status-section {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(212, 175, 55, 0.06);
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.status-section > label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.checkbox-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
-}
-
-.checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(212, 175, 55, 0.06);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.checkbox-item:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(212, 175, 55, 0.12);
-}
-
-.checkbox-item input[type="checkbox"] {
-    display: none;
-}
-
-.checkbox-item .checkmark {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    display: inline-block;
-    position: relative;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-
-.checkbox-item input:checked + .checkmark {
-    background: #d4af37;
-    border-color: #d4af37;
-}
-
-.checkbox-item input:checked + .checkmark::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #0a0a0f;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.checkbox-item .checkbox-label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
-}
+/* Form Actions */
 .form-actions {
     display: flex;
     gap: 1rem;
@@ -596,55 +509,54 @@ textarea.form-control {
 
 .btn-update:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 8px 25px rgba(212,175,55,0.3);
     color: #0a0a0f;
 }
 
 .btn-cancel {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.08);
-    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,175,55,0.08);
+    color: rgba(255,255,255,0.6);
 }
 
 .btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255,255,255,0.08);
     transform: translateY(-2px);
     color: #ffffff;
 }
 
-
+/* Responsive */
 @media (max-width: 768px) {
     .page-header {
         flex-direction: column;
         align-items: flex-start;
     }
+    
     .btn-back {
         width: 100%;
         justify-content: center;
     }
+    
     .edit-form-container {
         padding: 1.5rem;
     }
+    
     .form-row.two-col {
         grid-template-columns: 1fr;
     }
-    .checkbox-group {
-        grid-template-columns: 1fr;
-    }
+    
     .file-input-wrapper {
         flex-direction: column;
         align-items: flex-start;
     }
+    
     .form-actions {
         flex-direction: column;
     }
+    
     .form-actions .btn {
         width: 100%;
         justify-content: center;
-    }
-    .current-image {
-        max-width: 150px;
-        max-height: 150px;
     }
 }
 
@@ -652,17 +564,18 @@ textarea.form-control {
     .page-header h1 {
         font-size: 1.5rem;
     }
+    
     .edit-form-container {
         padding: 1rem;
     }
+    
     .image-section {
         padding: 1rem;
     }
-    .status-section {
-        padding: 1rem;
-    }
-    .checkbox-item {
-        padding: 0.5rem 0.75rem;
+    
+    .current-image {
+        max-width: 120px;
+        max-height: 120px;
     }
 }
 </style>
@@ -688,21 +601,6 @@ function previewImage(event) {
         previewContainer.style.display = 'none';
     }
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    const fileInput = document.getElementById('imageInput');
-    const fileName = document.getElementById('fileName');
-    
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                fileName.textContent = this.files[0].name;
-            } else {
-                fileName.textContent = 'No file chosen';
-            }
-        });
-    }
-});
 </script>
 
 <?php include 'includes/admin_footer.php'; ?>
