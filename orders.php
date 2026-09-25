@@ -9,7 +9,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Getting  the orders
+// Get orders
 $orders_query = "SELECT * FROM orders WHERE user_id = $user_id ORDER BY created_at DESC";
 $orders_result = executeQuery($orders_query);
 
@@ -24,7 +24,16 @@ include 'includes/header.php';
         
         <?php if (mysqli_num_rows($orders_result) > 0): ?>
             <div class="orders-list">
-                <?php while ($order = mysqli_fetch_assoc($orders_result)): ?>
+                <?php while ($order = mysqli_fetch_assoc($orders_result)): 
+                    // Get tracking history
+                    $tracking_query = "SELECT * FROM order_tracking WHERE order_id = " . $order['id'] . " ORDER BY created_at DESC";
+                    $tracking_result = executeQuery($tracking_query);
+                    $tracking_history = [];
+                    while ($track = mysqli_fetch_assoc($tracking_result)) {
+                        $tracking_history[] = $track;
+                    }
+                    $latest_tracking = !empty($tracking_history) ? $tracking_history[0] : null;
+                ?>
                     <div class="glass-card order-card animate-fade">
                         <div class="order-header">
                             <div class="order-info">
@@ -39,7 +48,8 @@ include 'includes/header.php';
                                     $status_colors = [
                                         'pending' => 'badge-warning',
                                         'processing' => 'badge-info',
-                                        'completed' => 'badge-success',
+                                        'shipped' => 'badge-primary',
+                                        'delivered' => 'badge-success',
                                         'cancelled' => 'badge-danger'
                                     ];
                                     $status = $order['status'];
@@ -77,9 +87,27 @@ include 'includes/header.php';
                                     </span>
                                 </div>
                             </div>
+                            
+                            <!-- Order Tracking -->
+                            <?php if ($latest_tracking): ?>
+                            <div class="order-tracking-section">
+                                <h4><i class="fas fa-shipping-fast"></i> Order Tracking</h4>
+                                <div class="tracking-status">
+                                    <span class="tracking-label">Current Status:</span>
+                                    <span class="badge <?php echo $color; ?>"><?php echo ucfirst($order['status']); ?></span>
+                                    <span class="tracking-time">Updated: <?php echo date('d M Y, h:i A', strtotime($latest_tracking['created_at'])); ?></span>
+                                </div>
+                                <div class="tracking-message">
+                                    <?php echo htmlspecialchars($latest_tracking['message']); ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
                         
                         <div class="order-footer">
+                            <a href="order_tracking.php?order=<?php echo $order['order_number']; ?>" class="btn btn-primary btn-sm">
+                                <i class="fas fa-shipping-fast"></i> Track Order
+                            </a>
                             <a href="order_success.php?order=<?php echo $order['order_number']; ?>" class="btn btn-secondary btn-sm">
                                 <i class="fas fa-eye"></i> View Details
                             </a>
@@ -167,11 +195,86 @@ include 'includes/header.php';
     color: var(--text-primary);
 }
 
+/* Order Tracking Section */
+.order-tracking-section {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: rgba(255,255,255,0.03);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--gold);
+}
+
+.order-tracking-section h4 {
+    color: var(--gold);
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.95rem;
+}
+
+.order-tracking-section h4 i {
+    margin-right: 0.5rem;
+}
+
+.tracking-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-sm);
+}
+
+.tracking-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.tracking-time {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.tracking-message {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: var(--spacing-sm);
+    background: rgba(255,255,255,0.02);
+    border-radius: var(--radius-sm);
+}
+
 .order-footer {
     padding-top: var(--spacing-md);
     border-top: 1px solid rgba(255,255,255,0.05);
     display: flex;
-    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.badge-primary {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+@media (max-width: 768px) {
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .order-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    .tracking-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    .order-footer {
+        flex-direction: column;
+    }
+    .order-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>
 
